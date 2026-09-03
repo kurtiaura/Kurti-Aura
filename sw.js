@@ -1,6 +1,6 @@
 "use strict";
 
-var CACHE_NAME = "aura-storefront-direct-whatsapp-v1";
+var CACHE_NAME = "aura-storefront-direct-whatsapp-v2";
 var CORE_FILES = [
   "./",
   "./index.html",
@@ -10,11 +10,11 @@ var CORE_FILES = [
   "./more-products-data.js",
   "./catalog-priority.js",
   "./security-guard.js",
-  "./assets/index-RrG8TB6h.js?v=10",
+  "./assets/index-RrG8TB6h.js?v=11",
   "./assets/index-CadshQGV.css",
-  "./search-enhancements.js?v=10",
+  "./search-enhancements.js?v=11",
   "./search-enhancements.css?v=10",
-  "./premium-storefront.js?v=10",
+  "./premium-storefront.js?v=11",
   "./premium-storefront.css?v=10"
 ];
 

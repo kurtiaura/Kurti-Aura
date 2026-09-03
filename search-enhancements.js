@@ -259,7 +259,7 @@
       '</div>',
       '<div class="aura-review-callout">',
       '<div><span class="aura-review-stars" aria-hidden="true">☆ ☆ ☆ ☆ ☆</span><strong>Purchased from Kurti Aura?</strong><p>Share your honest review after delivery. Add the product name, size and an optional photo.</p></div>',
-      '<a href="https://wa.me/917357924991?text=Hello%20Kurti%20Aura%2C%20I%20would%20like%20to%20share%20my%20honest%20product%20review." target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">SHARE YOUR REVIEW <span>→</span></a>',
+      '<a href="https://wa.me/919610246901?text=Hello%20Kurti%20Aura%2C%20I%20would%20like%20to%20share%20my%20honest%20product%20review." target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">SHARE YOUR REVIEW <span>→</span></a>',
       '</div>',
       '</div>'
     ].join("");

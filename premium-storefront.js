@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var STORE_WHATSAPP_NUMBER = "917357924991";
+  var STORE_WHATSAPP_NUMBER = "919610246901";
 
   var FAVORITES_KEY = "auraEthnicFavouritesV1";
   var RECENT_KEY = "auraEthnicRecentlyViewedV1";
@@ -595,7 +595,7 @@
   function registerApp() {
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=10", {
+        navigator.serviceWorker.register("./sw.js?v=11", {
           scope: "./",
           updateViaCache: "none"
         }).then(function (registration) {
