@@ -1,22 +1,21 @@
 "use strict";
 
-var CACHE_NAME = "aura-storefront-v8";
+var CACHE_NAME = "aura-storefront-direct-whatsapp-v1";
 var CORE_FILES = [
   "./",
   "./index.html",
-  "./tracking.html",
   "./favicon.svg",
   "./manifest.webmanifest",
   "./products-data.js",
   "./more-products-data.js",
   "./catalog-priority.js",
   "./security-guard.js",
-  "./assets/index-RrG8TB6h.js",
+  "./assets/index-RrG8TB6h.js?v=10",
   "./assets/index-CadshQGV.css",
-  "./search-enhancements.js",
-  "./search-enhancements.css",
-  "./premium-storefront.js?v=8",
-  "./premium-storefront.css?v=7"
+  "./search-enhancements.js?v=10",
+  "./search-enhancements.css?v=10",
+  "./premium-storefront.js?v=10",
+  "./premium-storefront.css?v=10"
 ];
 
 self.addEventListener("install", function (event) {

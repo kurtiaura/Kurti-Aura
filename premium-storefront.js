@@ -1,10 +1,6 @@
 (function () {
   "use strict";
 
-  var TRACKING_ORIGIN = "https://aura-ethnic-tracking-api.rohitrajmeena864.chatgpt.site";
-  var ORDER_API_URL = TRACKING_ORIGIN + "/api/orders";
-  var TRACKING_PAGE_URL = new URL("./tracking.html", window.location.href).toString();
-  var ORDER_REQUEST_KEY = "auraPendingOrderRequestV1";
   var STORE_WHATSAPP_NUMBER = "917357924991";
 
   var FAVORITES_KEY = "auraEthnicFavouritesV1";
@@ -497,59 +493,6 @@
     document.body.appendChild(banner);
   }
 
-  function ensureTrackingAccess() {
-    document.querySelectorAll(".desktop-nav, .mobile-menu-panel nav").forEach(function (nav) {
-      if (nav.querySelector(".aura-track-nav")) return;
-      var link = document.createElement("a");
-      link.className = "aura-track-nav";
-      link.href = TRACKING_PAGE_URL;
-      link.textContent = "Track Order";
-      nav.appendChild(link);
-    });
-
-    if (document.getElementById("aura-track-order")) return;
-    var anchor = document.querySelector(".trust-strip");
-    if (!anchor) return;
-    var section = document.createElement("section");
-    section.id = "aura-track-order";
-    section.className = "aura-tracking-access section";
-    section.innerHTML = [
-      '<div class="aura-tracking-copy">',
-      "<small>ALREADY ORDERED?</small>",
-      "<h2>Track your Kurti Aura order</h2>",
-      "<p>Use the Tracking ID sent in your WhatsApp order message. Full delivery tracking unlocks after your payment is confirmed.</p>",
-      "</div>",
-      '<a href="', TRACKING_PAGE_URL, '"><span>TRACK YOUR ORDER</span><b aria-hidden="true">→</b></a>'
-    ].join("");
-    anchor.insertAdjacentElement("afterend", section);
-  }
-
-  function createClientRequestId() {
-    if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
-    var bytes = new Uint8Array(16);
-    window.crypto.getRandomValues(bytes);
-    bytes[6] = bytes[6] & 15 | 64;
-    bytes[8] = bytes[8] & 63 | 128;
-    var hex = Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, "0"); }).join("");
-    return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
-  }
-
-  function requestIdForOrder(fingerprint) {
-    try {
-      var stored = JSON.parse(sessionStorage.getItem(ORDER_REQUEST_KEY) || "null");
-      if (stored && stored.fingerprint === fingerprint && Date.now() - Number(stored.createdAt || 0) < 24 * 60 * 60 * 1000) {
-        return stored.id;
-      }
-    } catch (error) {
-      /* A fresh id is safe because the durable order remains on the server. */
-    }
-    var id = createClientRequestId();
-    try {
-      sessionStorage.setItem(ORDER_REQUEST_KEY, JSON.stringify({ id: id, fingerprint: fingerprint, createdAt: Date.now() }));
-    } catch (error) {}
-    return id;
-  }
-
   function checkoutItems(form) {
     var checkout = form.closest(".checkout-layer");
     if (!checkout) return [];
@@ -577,11 +520,9 @@
     error.textContent = message || "";
   }
 
-  function whatsappOrderMessage(data, trackingId) {
+  function whatsappOrderMessage(data) {
     return [
       "*KURTI AURA — NEW ORDER*",
-      "*COPY TRACKING ID*",
-      "```" + trackingId + "```",
       "",
       "*CUSTOMER DETAILS*",
       "Name: " + data.customerName,
@@ -603,28 +544,16 @@
       "Payment: Pending — discussion on WhatsApp",
       "Order Note: " + (data.publicNote || "None"),
       "",
-      "*TRACKING*",
-      "Track here: " + TRACKING_PAGE_URL,
-      "Use the Tracking ID shown above and phone last 4 digits " + data.phone.slice(-4) + ".",
-      "Full tracking unlocks after payment is confirmed.",
-      "",
       "Please confirm the order and share the payment steps."
     ].join("\n");
   }
 
-  async function createOrderThenOpenWhatsApp(form) {
+  function openWhatsAppOrder(form) {
     var button = form.querySelector('button[type="submit"]');
     var originalLabel = button ? button.textContent : "";
-    var popup = window.open("", "aura-order-whatsapp");
-    if (popup) {
-      try {
-        popup.document.title = "Creating Kurti Aura order";
-        popup.document.body.textContent = "Creating your secure Tracking ID…";
-      } catch (error) {}
-    }
     if (button) {
       button.disabled = true;
-      button.textContent = "CREATING TRACKING ID…";
+      button.textContent = "OPENING WHATSAPP…";
     }
     setOrderError(form, "");
 
@@ -649,34 +578,12 @@
       if (pincode.length !== 6) throw new Error("Please enter a valid 6-digit PIN code.");
       if (!items.length || order.orderAmount <= 0) throw new Error("Your bag details could not be read. Please close checkout and try again.");
 
-      var fingerprint = JSON.stringify([
-        order.phone, order.customerName, order.address, order.pincode, order.items, order.orderAmount
-      ]);
-      order.clientRequestId = requestIdForOrder(fingerprint);
-
-      var response = await fetch(ORDER_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(order)
-      });
-      var result;
-      try { result = await response.json(); } catch (error) { result = {}; }
-      if (!response.ok || !result.order || !result.order.orderId) {
-        throw new Error(result.message || "Tracking ID could not be created. Please try again.");
-      }
-
-      var message = whatsappOrderMessage(order, result.order.orderId);
+      var message = whatsappOrderMessage(order);
       var whatsappUrl = "https://wa.me/" + STORE_WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
-      if (popup && !popup.closed) {
-        popup.opener = null;
-        popup.location.replace(whatsappUrl);
-      } else {
-        window.location.assign(whatsappUrl);
-      }
+      window.location.assign(whatsappUrl);
     } catch (error) {
-      if (popup && !popup.closed) popup.close();
-      setOrderError(form, error && error.message ? error.message : "Order could not be created. Please try again.");
-      showToast("Tracking ID was not created — please try again");
+      setOrderError(form, error && error.message ? error.message : "Order could not be sent. Please try again.");
+      showToast("Please check your order details and try again");
     } finally {
       if (button) {
         button.disabled = false;
@@ -688,7 +595,7 @@
   function registerApp() {
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=9", {
+        navigator.serviceWorker.register("./sw.js?v=10", {
           scope: "./",
           updateViaCache: "none"
         }).then(function (registration) {
@@ -713,7 +620,6 @@
   function runUpgrades() {
     upgradeScheduled = false;
     configureBottomNav();
-    ensureTrackingAccess();
     ensureWishlistDrawer();
     renderRecent();
     enhanceOpenModal();
@@ -732,7 +638,7 @@
     if (!(form instanceof HTMLFormElement) || !form.closest(".checkout-layer")) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    createOrderThenOpenWhatsApp(form);
+    openWhatsAppOrder(form);
   }, true);
 
   document.addEventListener("click", function (event) {
